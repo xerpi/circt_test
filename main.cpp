@@ -1,12 +1,17 @@
 #include <iostream>
+#include <circt/Dialect/Comb/CombDialect.h>
+#include <circt/Dialect/Comb/CombOps.h>
 #include <circt/Dialect/HW/HWDialect.h>
 #include <circt/Dialect/HW/HWInstanceGraph.h>
 #include <circt/Dialect/HW/HWOps.h>
 #include <mlir/IR/ImplicitLocOpBuilder.h>
+#include <mlir/IR/Verifier.h>
 #include <llvm/ADT/PostOrderIterator.h>
+#include <llvm/Support/raw_ostream.h>
 
 using namespace mlir;
 using namespace circt;
+using namespace comb;
 using namespace hw;
 
 #define EXPECT_EQ(a, b) \
@@ -20,33 +25,49 @@ using namespace hw;
 
 int main()
 {
-  // Create a hw.module with no ports.
   MLIRContext context;
+  context.loadDialect<CombDialect>();
   context.loadDialect<HWDialect>();
   LocationAttr loc = UnknownLoc::get(&context);
-  auto module = ModuleOp::create(loc);
-  auto builder = ImplicitLocOpBuilder::atBlockEnd(loc, module.getBody());
-  auto top = builder.create<HWModuleOp>(StringAttr::get(&context, "Top"),
-                                        ArrayRef<PortInfo>{});
+  ModuleOp module = ModuleOp::create(loc);
+  ImplicitLocOpBuilder builder = ImplicitLocOpBuilder::atBlockEnd(loc, module.getBody());
+  IntegerType wireTy = builder.getIntegerType(3);
 
+  // Module ports (inputs and outputs)
+  SmallVector<PortInfo> ports;
+  ports.push_back(PortInfo{builder.getStringAttr("a"), PortDirection::INPUT, wireTy, 0});
+  ports.push_back(PortInfo{builder.getStringAttr("b"), PortDirection::INPUT, wireTy, 1});
+  ports.push_back(PortInfo{builder.getStringAttr("out"), PortDirection::OUTPUT, wireTy, 0});
+
+  HWModuleOp top = builder.create<HWModuleOp>(builder.getStringAttr("Top"), ports);
   builder.setInsertionPointToStart(top.getBodyBlock());
-  auto wireTy = builder.getIntegerType(2);
 
-  // Add two ports.
-  SmallVector<std::pair<StringAttr, Value>> appendPorts;
-  auto wireA = builder.create<ConstantOp>(wireTy, 0);
-  appendPorts.emplace_back(builder.getStringAttr("a"), wireA);
-  auto wireD = builder.create<ConstantOp>(wireTy, 1);
-  appendPorts.emplace_back(builder.getStringAttr("d"), wireD);
-  top.appendOutputs(appendPorts);
+  //builder.create<comb::AndOp>(top.getArgument(0), top.getArgument(0), c0);
 
-  SmallVector<std::pair<StringAttr, Value>> insertPorts;
-  auto wireB = builder.create<ConstantOp>(wireTy, 2);
-  insertPorts.emplace_back(builder.getStringAttr("b"), wireB);
-  auto wireC = builder.create<ConstantOp>(wireTy, 3);
-  insertPorts.emplace_back(builder.getStringAttr("c"), wireC);
-  top.insertOutputs(1, insertPorts);
+  /*inputs.emplace_back(builder.getStringAttr("a"), wireA);
+  inputs.emplace_back(builder.getStringAttr("b"), wireB);
+  inputs.emplace_back(builder.getStringAttr("c"), wireC);
+  inputs.emplace_back(builder.getStringAttr("d"), wireD);*/
+  //top.insertPorts(inputs, outputs);
 
+  // Constants
+  ConstantOp c0 = builder.create<ConstantOp>(wireTy, 0);
+  //ConstantOp c1 = builder.create<ConstantOp>(wireTy, 1);
+
+  auto foo = builder.create<comb::AndOp>(top.getArgument(0), c0);
+  auto foo2 = builder.create<comb::OrOp>(foo, top.getArgument(1));
+
+  //builder.create<hw::OutputOp>();
+  auto output = cast<OutputOp>(top.getBodyBlock()->getTerminator());
+  output->insertOperands(0, ValueRange{foo2});
+  //builder.create<comb::AndOp>(output.getOutputs(), c1);
+
+  //builder.create<hw::OutputOp>(ValueRange{foo2});
+
+  std::cout << "ins: " << top.getNumInputs() << ", outs: " << top.getNumOutputs() << std::endl;
+  std::cout << "results types: " << top.getResultTypes().size() << std::endl;
+
+#if 0
   auto ports = top.getAllPorts();
   ASSERT_EQ(ports.size(), 4u);
 
@@ -73,6 +94,10 @@ int main()
   EXPECT_EQ(output->getOperand(1), wireB.getResult());
   EXPECT_EQ(output->getOperand(2), wireC.getResult());
   EXPECT_EQ(output->getOperand(3), wireD.getResult());
+#endif
+
+  std::cout << "verify: " << mlir::verify(module).succeeded() << std::endl;
+  module.dump();
 
   std::cout << "Done!" << std::endl;
 }
