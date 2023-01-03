@@ -1,4 +1,5 @@
 #include <iostream>
+#include <circt/Conversion/ExportVerilog.h>
 #include <circt/Dialect/Comb/CombDialect.h>
 #include <circt/Dialect/Comb/CombOps.h>
 #include <circt/Dialect/HW/HWDialect.h>
@@ -50,6 +51,11 @@ int main()
   std::cout << "Module inputs: " << top.getNumInputs() << ", outputs: " << top.getNumOutputs() << std::endl;
   std::cout << "Module verify: " << mlir::verify(module).succeeded() << std::endl;
   module.dump();
+
+  std::string str;
+  llvm::raw_string_ostream os(str);
+  std::cout << "Export Verilog: " << exportVerilog(module, os).succeeded() << std::endl;
+  std::cout << str << std::endl;
 
   std::cout << "Done!" << std::endl;
 }

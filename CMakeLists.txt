@@ -18,5 +18,6 @@ target_include_directories(circt_test
 target_link_libraries(circt_test
   PRIVATE
   CIRCTComb
+  CIRCTExportVerilog
   CIRCTHW
 )
