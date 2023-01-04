@@ -21,7 +21,7 @@ int main()
   context.loadDialect<hw::HWDialect>();
   context.loadDialect<sv::SVDialect>();
   LocationAttr loc = UnknownLoc::get(&context);
-  ModuleOp module = ModuleOp::create(loc);
+  ModuleOp module = ModuleOp::create(loc, {});
   ImplicitLocOpBuilder builder = ImplicitLocOpBuilder::atBlockEnd(loc, module.getBody());
   IntegerType wire32 = builder.getIntegerType(32);
 
