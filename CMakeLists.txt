@@ -20,4 +20,5 @@ target_link_libraries(circt_test
   CIRCTComb
   CIRCTExportVerilog
   CIRCTHW
+  CIRCTSV
 )
