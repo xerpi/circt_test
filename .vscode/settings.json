@@ -45,6 +45,7 @@
                 "complex": "cpp",
                 "map": "cpp",
                 "numeric": "cpp",
-                "sstream": "cpp"
+                "sstream": "cpp",
+                "atomic": "cpp"
         }
 }
