@@ -42,6 +42,12 @@ int main()
   hw::HWModuleOp top = builder.create<hw::HWModuleOp>(builder.getStringAttr("Top"), ports);
   builder.setInsertionPointToStart(top.getBodyBlock());
 
+  // Create struct
+  SmallVector<hw::StructType::FieldInfo> fields;
+  fields.push_back(hw::StructType::FieldInfo{builder.getStringAttr("foo1"), wirei32});
+  fields.push_back(hw::StructType::FieldInfo{builder.getStringAttr("foo2"), wiresi64});
+  auto st = hw::StructType::get(&context, fields);
+
   // Constants
   hw::ConstantOp c0 = builder.create<hw::ConstantOp>(wirei32, 42);
   hw::ConstantOp c1 = builder.create<hw::ConstantOp>(wirei32, 0x11223344);

@@ -4,7 +4,7 @@
                 {
                         "name": "default",
                         "displayName": "Custom configure preset",
-                        "description": "Sets Ninja generator, build and install directory",
+                        "description": "Sets Makefile generator, build and install directory",
                         "generator": "Unix Makefiles",
                         "binaryDir": "${sourceDir}/build",
                         "cacheVariables": {
