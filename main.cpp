@@ -84,7 +84,7 @@ int main()
   std::cout << "MLIR after running passes" << std::endl;
   module.dump();
 
-  // Exmit Verilog
+  // Emit Verilog
   std::string str;
   llvm::raw_string_ostream os(str);
   auto exportVerilogResult = exportVerilog(module, os);

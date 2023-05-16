@@ -10,11 +10,11 @@
                 "${workspaceFolder}/../circt/llvm/build/tools/mlir/include"
             ],
             "defines": [],
-            "compilerPath": "/usr/bin/c++",
+            "compilerPath": "/usr/bin/g++",
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "linux-gcc-x64",
-            "configurationProvider": "ms-vscode.makefile-tools"
+            "configurationProvider": "ms-vscode.cpptools"
         }
     ],
     "version": 4
